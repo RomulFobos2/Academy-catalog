@@ -1,0 +1,140 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Добавить документацию</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/javascript.js"></script>
+
+</head>
+<body class="text-center body-addPage">
+<main class="form-addPage">
+    <div class="container mt-5 mb-5">
+        <form action="/admin/documentations/addDocumentation" enctype="multipart/form-data" method="post">
+<!--            <img class="mb-4" src="https://getbootstrap.com/docs/5.0/assets/brand/bootstrap-logo.svg" alt="" width="72"-->
+<!--                 height="57">-->
+            <h1 class="h3 mb-3 fw-normal">Добавление документации</h1>
+            <p class="fs-6 text-danger" id="documentationNameError" th:text="${documentationNameError}"></p>
+            <div class="row g-3">
+                <div class="col-sm-12 mx-auto">
+                    <select class="form-select form-neighbours small-select" name="categoryDocumentationId" id="categoryDocumentationId" required
+                            onchange="loadTypesForCategory(this.value);">
+                        <option selected disabled value="">Выберите категорию</option>
+                        <option th:each="categoryDocumentation : ${allCategoryDocumentations}" th:value="${categoryDocumentation.getId()}"
+                                th:text="${categoryDocumentation.getCategory()}"></option>
+                    </select>
+                </div>
+                <div class="col-sm-12 mx-auto">
+                    <select class="form-select form-neighbours small-select" name="typeDocumentationId" id="typeDocumentationId" required
+                            onchange="checkDocumentationExists()">
+                        <option selected disabled value="">Выберите тип</option>
+                        <!-- Эти опции будут динамически добавляться через JavaScript -->
+                    </select>
+                </div>
+                <div class="col-sm-9 mx-auto">
+                    <label for="inputFileField" class="form-label">Выберите файл</label>
+                    <input type="file" class="form-control" name="inputFileField" id="inputFileField" accept="application/pdf" placeholder="Загрузите файл..." required
+                           onchange="checkDocumentationExists()">
+                </div>
+            </div><br>
+            <div class="row">
+                <div class="col-sm-6 mx-auto">
+                    <button type="submit" class="btn btn-lg btn-primary w-100" id="submitButton" disabled>Добавить</button>
+                </div>
+            </div>
+            <a class="p-2 text-dark" th:href="'/admin/documentations/allDocumentations'">К списку документации</a>
+            <p class="mt-5 mb-3 text-muted">&copy;2024</p>
+        </form>
+    </div>
+</main>
+<script>
+    function loadTypesForCategory(categoryId) {
+        if (categoryId) {
+            fetch('/admin/documentations/types?categoryId=' + categoryId)
+                .then(response => response.json())
+                .then(data => {
+                    let typeSelect = document.getElementById('typeDocumentationId');
+                    typeSelect.innerHTML = '<option selected disabled value="">Выберите тип</option>';  // Очищаем старые опции
+
+                    data.forEach(function (typeDocumentation) {
+                        let option = document.createElement('option');
+                        option.value = typeDocumentation.id;
+                        option.text = typeDocumentation.type;
+                        typeSelect.appendChild(option);
+                    });
+
+                    // Сброс выбранного значения типа
+                    typeSelect.value = '';
+
+                    // Деактивируем кнопку "Добавить"
+                    let submitButton = document.getElementById('submitButton');
+                    submitButton.disabled = true;
+
+                    // Очищаем сообщение об ошибке
+                    let errorMessage = document.getElementById('documentationNameError');
+                    errorMessage.textContent = "";
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+    }
+
+    function checkDocumentationExists() {
+        let categoryId = document.getElementById('categoryDocumentationId').value;
+        let typeId = document.getElementById('typeDocumentationId').value;
+        let fileInput = document.getElementById('inputFileField');
+        let fileName = fileInput.files.length > 0 ? fileInput.files[0].name.trim() : null;
+
+        let submitButton = document.getElementById('submitButton');
+        let errorMessage = document.getElementById('documentationNameError');
+
+        // Если не все поля заполнены, деактивируем кнопку и выходим из функции
+        if (!categoryId || !typeId || !fileName) {
+            submitButton.disabled = true;
+            errorMessage.textContent = "";
+            return;
+        }
+
+        // Проверяем, что файл имеет расширение .pdf
+        if (!fileName.toLowerCase().endsWith('.pdf')) {
+            errorMessage.textContent = "Файл должен быть в формате PDF.";
+            submitButton.disabled = true;
+            return;
+        }
+
+        // Извлекаем базовое имя файла без расширения
+        let baseFileName = fileName.substring(0, fileName.lastIndexOf('.')).trim();
+
+        // Проверяем, что длина базового имени файла не менее 1 символа после удаления пробелов
+        if (baseFileName.length < 1) {
+            errorMessage.textContent = "Имя файла должно содержать не менее 1 символа без учета расширения.";
+            submitButton.disabled = true;
+            return;
+        }
+
+        fetch(`/admin/documentations/check?categoryId=${categoryId}&typeId=${typeId}&fileName=${encodeURIComponent(fileName)}`)
+            .then(response => response.json())
+            .then(exists => {
+                if (exists) {
+                    // Если документ уже существует
+                    errorMessage.textContent = "Документация с таким названием уже существует.";
+                    submitButton.disabled = true;
+                } else {
+                    // Если документа нет
+                    errorMessage.textContent = "";
+                    submitButton.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при проверке документации:', error);
+                // В случае ошибки деактивируем кнопку и показываем сообщение об ошибке
+                errorMessage.textContent = "Произошла ошибка при проверке документации.";
+                submitButton.disabled = true;
+            });
+    }
+</script>
+</body>
+</html>
+

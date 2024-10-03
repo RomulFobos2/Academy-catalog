@@ -1,0 +1,327 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Документы</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/javascript.js"></script>
+</head>
+<body class="mb-5">
+<header th:insert="~{blocks/header :: header}"></header>
+
+<div class="container mt-5">
+    <div class="alert alert-info mt-2 text-center">
+        <div class="pagination justify-content-start">
+            <div class="d-flex justify-content-start flex-wrap gap-3">
+                <a th:href="'/'" class="btn btn-secondary my-auto">На главную</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-md-3 col-lg-2 text">
+                <nav class="bg-light sidebar position-sticky">
+                    <div class="position-sticky">
+                        <h5 class="text-center">Категории</h5>
+                        <div th:each="categoryDocumentation, indexStat : ${allCategoryDocumentations}">
+                            <button class="btn btn-outline-primary w-100 mb-2 btn-sm category-btn"
+                                    th:data-id="${categoryDocumentation.id}"
+                                    th:text="${categoryDocumentation.category}"
+                                    th:classappend="${indexStat.index == 0} ? 'active' : ''">
+                            </button>
+                        </div>
+<!--                        <div>-->
+<!--                            <input type="text" id="searchInput" class="form-control mb-3"-->
+<!--                                   placeholder="Поиск...">-->
+<!--                        </div>-->
+                        <br>
+                    </div>
+                </nav>
+            </div>
+
+            <div class="col-md-9 col-lg-10" id="types-container">
+                <h3 class="text-dark text-center">Типы документации</h3>
+                <div id="accordion-container">
+                    <th:block th:each="typeDocumentation, index  : ${allTypeDocumentations}">
+                        <div class="p-2 p-md-3 mb-2 pt-2 rounded fon-container text-center"
+                             style="background-image: url('/images/fon_home.jpg');">
+                            <div class="row g-3">
+                                <div class="col-sm-12">
+                                    <div class="accordion" th:id="${'accordion_' + index.index}">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header">
+                                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                                        th:data-bs-target="${'#collapse_' + index.index}" aria-expanded="false"
+                                                        th:aria-controls="${'collapse_' + index.index}"
+                                                        th:text="${typeDocumentation.getType()}"
+                                                        th:onclick="'loadDocumentsByType(' + ${typeDocumentation.getId()} + ', ' + ${index.index} + ')'">
+                                                </button>
+                                            </h2>
+                                            <div th:id="${'collapse_' + index.index}"
+                                                 class="accordion-collapse collapse"
+                                                 th:data-bs-parent="${'#accordion_' + index.index}">
+                                                <div class="accordion-body text-start" id="documents-container-${index.index}">
+                                                    <!-- Таблица для отображения документов -->
+                                                    <table class="table table-striped">
+                                                        <thead>
+                                                        <tr>
+                                                            <th>#</th>
+                                                            <th>Имя документа</th>
+<!--                                                            <th>Действия</th>-->
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody id="documents-tbody-${index.index}">
+                                                        <!-- Контейнер для динамической подгрузки документов -->
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </th:block>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для подтверждения удаления -->
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Вы действительно хотите удалить этот документ?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Нет</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Да</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:insert="~{blocks/footer :: footer}"></div>
+</body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Найдем первую категорию по умолчанию
+        const firstCategoryButton = document.querySelector('.category-btn');
+
+        // Получим ID первой категории
+        if (firstCategoryButton) {
+            const firstCategoryId = firstCategoryButton.getAttribute('data-id');
+
+            // AJAX-запрос для загрузки типов документации первой категории
+            fetch(`/visitor/documentations/types?categoryId=${firstCategoryId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const accordionContainer = document.getElementById('accordion-container');
+                    accordionContainer.innerHTML = ''; // Очищаем текущие данные
+
+                    // Генерируем новые элементы на основе полученных данных
+                    data.forEach(function(type, index) {
+                        const accordionItem = `
+                        <div class="p-2 p-md-3 mb-2 pt-2 rounded fon-container text-center" style="background-image: url('/images/fon_home.jpg');">
+                            <div class="row g-3">
+                                <div class="col-sm-12">
+                                    <div class="accordion" id="accordion_${index}">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header">
+                                            <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                                    data-bs-target="#collapse_${index}" aria-expanded="true"
+                                                    aria-controls="collapse_${index}"
+                                                    onclick="loadDocumentsByType(${type.id}, ${index})">
+                                                ${type.type}
+                                            </button>
+                                            </h2>
+                                            <div id="collapse_${index}" class="accordion-collapse collapse"
+                                                 data-bs-parent="#accordion_${index}">
+                                                <div class="accordion-body text-start">
+                                                    <div id="documents-container-${index}">
+                                                        <!-- Контейнер для динамической подгрузки документов -->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                        accordionContainer.insertAdjacentHTML('beforeend', accordionItem);
+                    });
+                })
+                .catch(error => console.error('Ошибка:', error));
+        }
+
+        // Обработчик нажатия на кнопки категорий
+        document.querySelectorAll('.category-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                // Убираем активный класс у всех кнопок
+                document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+
+                // Добавляем активный класс на текущую кнопку
+                button.classList.add('active');
+
+                const categoryId = button.getAttribute('data-id');
+
+                // AJAX-запрос для получения типов документации
+                fetch(`/visitor/documentations/types?categoryId=${categoryId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const accordionContainer = document.getElementById('accordion-container');
+                        accordionContainer.innerHTML = ''; // Очищаем текущие данные
+
+                        // Генерируем новые элементы на основе полученных данных
+                        data.forEach(function(type, index) {
+                            const accordionItem = `
+                            <div class="p-2 p-md-3 mb-2 pt-2 rounded fon-container text-center" style="background-image: url('/images/fon_home.jpg');">
+                                <div class="row g-3">
+                                    <div class="col-sm-12">
+                                        <div class="accordion" id="accordion_${index}">
+                                            <div class="accordion-item">
+                                                <h2 class="accordion-header">
+                                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                                        data-bs-target="#collapse_${index}" aria-expanded="true"
+                                                        aria-controls="collapse_${index}"
+                                                        onclick="loadDocumentsByType(${type.id}, ${index})">
+                                                    ${type.type}
+                                                </button>
+                                                </h2>
+                                                <div id="collapse_${index}" class="accordion-collapse collapse"
+                                                     data-bs-parent="#accordion_${index}">
+                                                    <div class="accordion-body text-start" id="documents-container-${index}">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                            accordionContainer.insertAdjacentHTML('beforeend', accordionItem);
+                        });
+                    })
+                    .catch(error => console.error('Ошибка:', error));
+            });
+        });
+    });
+
+
+    function loadDocumentsByType(typeId, index) {
+        const container = document.getElementById(`documents-container-${index}`);
+
+        // Проверяем, существует ли контейнер для таблицы и создаем его, если не существует
+        if (!document.getElementById(`documents-tbody-${index}`)) {
+            // Создаём таблицу с tbody динамически
+            container.innerHTML = `
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Имя документа</th>
+<!--                    <th>Действия</th>-->
+                </tr>
+            </thead>
+            <tbody id="documents-tbody-${index}">
+                <!-- Контейнер для динамической подгрузки документов -->
+            </tbody>
+        </table>
+        `;
+        }
+
+        const tbody = document.getElementById(`documents-tbody-${index}`);
+
+        // Проверяем, были ли уже загружены документы
+        if (tbody.getAttribute('data-loaded') === 'true') {
+            return; // Если документы уже загружены, не выполняем повторный запрос
+        }
+
+        // Отправляем AJAX запрос на сервер для получения документов по typeId
+        fetch(`/visitor/documentations/byType?typeId=${typeId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Очищаем контейнер перед добавлением документов
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3">Документы отсутствуют</td></tr>';
+                    return;
+                }
+
+                // Перебираем документы и создаем строки таблицы для их отображения с порядковыми номерами
+                data.forEach(function(doc, i) {
+                    const filePath = doc.filePath.replace(/\\/g, '/'); // Заменяем обратные слэши на прямые
+                    const documentItem = `
+                <tr>
+                    <td>${i + 1}</td> <!-- Порядковый номер -->
+                    <td><a href="/visitor/documentation?filePath=${encodeURIComponent(filePath)}" target="_blank">
+                        ${filePath.split('/').pop()}
+                    </a></td> <!-- Имя документа -->
+                    <!--<td>
+                        <a href="/visitor/documentations/editDocumentation/${doc.id}" class="me-2 text-primary text-decoration-none">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="#" class="text-danger" onclick="confirmDelete(${doc.id})">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>--> <!-- Иконки действий -->
+                </tr>
+                `;
+                    tbody.insertAdjacentHTML('beforeend', documentItem);
+                });
+
+                // Помечаем, что документы загружены
+                tbody.setAttribute('data-loaded', 'true');
+            })
+            .catch(error => {
+                console.error('Ошибка при загрузке документов:', error);
+                tbody.innerHTML = '<tr><td colspan="3">Ошибка при загрузке документов</td></tr>';
+            });
+    }
+
+
+
+    let documentIdToDelete;
+
+    function confirmDelete(documentId) {
+        documentIdToDelete = documentId; // Сохраняем ID документа
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+        deleteModal.show();
+    }
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        fetch(`/visitor/documentations/deleteDocumentation/${documentIdToDelete}`, {
+            method: 'DELETE',
+        })
+            .then(response => {
+                return response.text().then(message => ({ message, ok: response.ok }));
+            })
+            .then(({ message, ok }) => {
+                if (ok) {
+                    // Успешное удаление - обновляем страницу или скрываем документ
+                    location.reload(); // Перезагружаем страницу
+                } else {
+                    // Если произошла ошибка, показываем сообщение в alert
+                    alert(message);  // Выводим сообщение об ошибке
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при удалении:', error);
+                alert('Произошла ошибка при удалении документации. Подробности смотрите в логах.');
+            });
+    });
+</script>
+</html>

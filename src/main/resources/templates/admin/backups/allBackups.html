@@ -1,0 +1,76 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Резервное копирование</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/javascript.js"></script>
+</head>
+<body class="mb-5">
+<header th:insert="~{blocks/header :: header}"></header>
+
+<div class="container mt-5">
+    <div class="alert alert-info mt-2 text-center">
+        <p class="fs-6 text-danger" id="backupError" th:text="${backupError}"></p>
+        <div class="pagination justify-content-start">
+            <div class="d-flex justify-content-start flex-wrap gap-3">
+                <a th:href="'/admin/administrationPanel'" class="btn btn-secondary my-auto">На административную панель</a>
+                <a th:href="'/admin/backups/addBackup'" class="btn btn-success my-auto">Создать резервную копию</a>
+            </div>
+        </div>
+    </div>
+
+    <br>
+
+    <div class="p-2 p-md-3 mb-2 pt-2 rounded fon-container text-center"
+         style="background-image: url('/images/fon_home.jpg');">
+        <h3 class="text-dark " th:text="'Резервные копии'"></h3>
+
+
+        <div class="container mt-5">
+            <table class="table" id="userTable">
+                <thead>
+                <tr>
+                    <th>№</th>
+                    <th>Имя архива</th>
+                    <th>Дата создания</th>
+                    <th>Контрольная сумма</th>
+                    <th>Действия</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="backup, index : ${allBackups}">
+                    <td th:text="${index.index+1}"></td>
+                    <td th:text="${backup.getArchiveName()}"></td>
+                    <td th:text="${#temporals.format(backup.getCreateDate(), 'dd.MM.yyyy HH:mm')}"></td>
+                    <td th:text="${backup.getControlSumma()}"></td>
+                    <td>
+                        <div class="d-flex justify-content-between w-100">
+                            <a th:href="'/admin/backups/restoreFromBackup/' + ${backup.getId()}"
+                               class="btn btn-warning btn-sm"
+                               title="Редактировать">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </a>
+                            <a th:href="'/admin/backups/deleteBackup/' + ${backup.getId()}"
+                               class="btn btn-danger btn-sm"
+                               title="Удалить"
+                               onclick="return confirm('Вы уверены, что хотите удалить резервную копию?');">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div th:insert="~{blocks/footer :: footer}"></div>
+</body>
+<script>
+</script>
+</html>

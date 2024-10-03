@@ -1,0 +1,82 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"   xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<head>
+    <title>Профиль</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/javascript.js"></script>
+</head>
+<body class="mb-5">
+<header th:insert="blocks/header :: header"></header>
+
+<div class="container mt-5">
+    <div class="alert alert-info mt-2">
+        <h1 th:text="${roleName + ': ' + currentUser.lastName + ' ' + currentUser.firstName + ' ' + currentUser.patronymicName}"/>
+        <a>Логин пользователя: </a> <a th:text="${currentUser.username}"/>
+        <br>
+    </div>
+    <div class="d-flex justify-content-start flex-wrap">
+        <form class="form-row">
+            <a th:href="'/'" class="btn btn-secondary mx-auto">Назад</a>
+            <a th:href="'/change-password'" class="btn btn-warning mx-auto">Сменить пароль</a>
+        </form>
+    </div>
+
+    <div sec:authorize="hasRole('ROLE_VISITOR')">
+        <br>
+        <br>
+        <div class="alert alert-info mt-2">
+        <h3 class="text-center">Журнал посещений</h3>
+        <table class="table table-striped text-center">
+            <thead>
+            <tr>
+                <th>Индекс</th>
+                <th>Имя документа</th>
+                <th>Дата открытия</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="action, stat : ${allVisitorActions}">
+                <!-- Непрерывная нумерация -->
+                <td th:text="${currentPage * 10 + stat.index + 1}">1</td> <!-- Индекс с учетом страницы -->
+                <td th:text="${action.getDocumentPath()}">Документ 1</td> <!-- Имя документа -->
+                <td th:text="${#temporals.format(action.getTimeOfVisit(), 'dd.MM.yyyy HH:mm')}"></td> <!-- Дата открытия -->
+            </tr>
+            </tbody>
+        </table>
+        </div>
+        <!-- Навигация для постраничного просмотра -->
+        <div class="d-flex justify-content-center mt-3">
+            <ul class="pagination" th:if="${totalPages > 1}"> <!-- Показываем пагинацию только если страниц больше одной -->
+                <!-- Кнопка "Назад" -->
+                <li th:classappend="${currentPage == 0} ? 'disabled' : ''">
+                    <a class="page-link" th:href="@{/profile(page=${currentPage - 1})}" th:if="${currentPage > 0}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+
+                <!-- Пагинация по номерам страниц -->
+                <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                    th:classappend="${i == currentPage} ? 'active' : ''" class="page-item">
+                    <a class="page-link" th:href="@{/profile(page=${i})}" th:text="${i + 1}"></a>
+                </li>
+
+                <!-- Кнопка "Вперед" -->
+                <li th:classappend="${currentPage == totalPages - 1} ? 'disabled' : ''">
+                    <a class="page-link" th:href="@{/profile(page=${currentPage + 1})}" th:if="${currentPage < totalPages - 1}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+</div>
+<div th:insert="blocks/footer :: footer"></div>
+</body>
+</html>

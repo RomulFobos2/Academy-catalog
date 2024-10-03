@@ -1,0 +1,91 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Добавить категорию</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/javascript.js"></script>
+
+</head>
+<body class="text-center body-addPage">
+<main class="form-addPage">
+    <div class="container mt-5 mb-5">
+        <form action="/admin/categoryDocumentations/addCategoryDocumentation" method="post">
+<!--            <img class="mb-4" src="https://getbootstrap.com/docs/5.0/assets/brand/bootstrap-logo.svg" alt="" width="72"-->
+<!--                 height="57">-->
+            <h1 class="h3 mb-3 fw-normal">Добавление категории</h1>
+            <p class="fs-6 text-danger" th:text="${categoryDocumentationNameError}"></p>
+            <div class="row g-3">
+                <div class="col-sm-9 mx-auto">
+                    <input type="text" class="form-control" name="inputCategory" id="inputCategory"
+                           required placeholder="Название категории">
+                </div>
+            </div><br>
+            <div class="row">
+                <div class="col-sm-6 mx-auto">
+                    <button type="submit" class="btn btn-lg btn-primary w-100" disabled>Добавить</button>
+                </div>
+            </div>
+<!--            <a class="p-2 text-dark" th:href="'/admin/categoryDocumentations/allCategoryDocumentations'">К списку категорий</a>-->
+            <a class="p-2 text-dark" th:href="'/admin/typeDocumentations/allTypeDocumentations'">К списку категорий</a>
+            <p class="mt-5 mb-3 text-muted">&copy;2024</p>
+        </form>
+    </div>
+</main>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputCategory = document.querySelector('input[name="inputCategory"]');
+        const submitButton = document.querySelector('button[type="submit"]');
+        const categoryError = document.querySelector('.text-danger');
+
+        const forbiddenCharacters = /[\\/:*?"<>|]/; // Регулярное выражение для недопустимых символов
+
+        function checkFormValidity() {
+            const categoryName = inputCategory.value.trim();
+            const isCategoryValid = !categoryError.textContent && categoryName.length >= 2;
+            submitButton.disabled = !isCategoryValid;
+        }
+
+        inputCategory.addEventListener('input', function() {
+            const categoryName = inputCategory.value.trim();
+
+            // Проверяем, что длина категории не менее 2 символов
+            if (categoryName.length < 2) {
+                categoryError.textContent = 'Название категории должно быть не менее 2 символов';
+                checkFormValidity();
+                return; // Прерываем дальнейшее выполнение, если длина меньше 2
+            } else {
+                categoryError.textContent = ''; // Очищаем ошибку, если длина достаточная
+            }
+
+            // Проверяем на наличие недопустимых символов
+            if (forbiddenCharacters.test(categoryName)) {
+                categoryError.textContent = 'Название категории содержит недопустимые символы: \\ / : * ? " < > |';
+                inputCategory.value = categoryName.replace(forbiddenCharacters, ''); // Удаляем недопустимые символы
+                checkFormValidity();
+                return;
+            }
+
+            // Проверяем, существует ли такая категория
+            fetch(`/admin/categoryDocumentations/checkCategoryDocumentationExists?categoryName=${encodeURIComponent(categoryName)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data) { // Если категория уже существует
+                        categoryError.textContent = 'Категория с таким названием уже существует';
+                    } else {
+                        categoryError.textContent = '';
+                    }
+                    checkFormValidity();
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                });
+        });
+    });
+</script>
+</body>
+</html>
+

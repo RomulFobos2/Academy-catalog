@@ -1,0 +1,128 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Добавить пользователя</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/javascript.js"></script>
+
+</head>
+<body class="text-center body-addPage">
+<main class="form-addPage">
+    <div class="container mt-5 mb-5">
+        <form action="/admin/users/addUser" method="post">
+            <h1 class="h3 mb-3 fw-normal">Добавление пользователя</h1>
+            <p class="fs-6 text-danger" th:text="${usernameError}"></p>
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" name="inputLastName" id="inputLastName" required
+                           placeholder="Фамилия" maxlength="50">
+                </div>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" name="inputFirstName" id="inputFirstName" required
+                           placeholder="Имя" maxlength="50">
+                </div>
+                <div class="col-sm-12">
+                    <input type="text" class="form-control" name="inputPatronymicName" id="inputPatronymicName" required
+                           placeholder="Отчество" maxlength="50">
+                </div>
+
+                <div class="col-sm-12">
+                <input type="text" name="inputUsername" id="inputUsername" placeholder="Логин" class="form-control" required maxlength="50"
+                       pattern="[A-Za-z0-9._-]+" title="Логин может содержать только латинские буквы, цифры и символы . _ -">
+                </div>
+
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" name="inputFaculty" id="inputFaculty" required
+                           placeholder="Факультет" maxlength="50">
+                </div>
+
+                <div class="col-sm-4">
+                    <select class="form-select form-neighbours" name="inputCourse" id="inputCourse" required>
+                        <option selected disabled value="">Курс</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                    </select>
+                </div>
+
+                <div class="col-sm-12">
+                <input type="password" name="inputPassword" id="inputPassword" placeholder="Введите пароль" autocomplete="new-password"
+                       class="form-control" required pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$"
+                       title="Требования к паролю: не менее 8 символов, заглавные и строчные латинские буквы, не менее 1 цифры">
+                </div>
+
+                <div class="col-sm-12">
+                <input type="password" name="inputPasswordConfirm" id="inputPasswordConfirm" placeholder="Подтвердите пароль" autocomplete="new-password"
+                       class="form-control" required>
+                </div>
+                <h5 class="fs-6 text-danger" id="passwordError"></h5>
+            </div>
+            <div class="row">
+                <div class="col-sm-6 mx-auto">
+                    <button type="submit" class="btn btn-lg btn-primary w-100" disabled>Добавить</button>
+                </div>
+            </div>
+            <a class="p-2 text-dark" th:href="'/admin/users/allUsers'">К списку пользователей</a>
+            <p class="mt-5 mb-3 text-muted">&copy;2024</p>
+        </form>
+    </div>
+</main>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const usernameInput = document.getElementById('inputUsername');
+        const passwordInput = document.getElementById('inputPassword');
+        const passwordConfirmInput = document.getElementById('inputPasswordConfirm');
+        const submitButton = document.querySelector('button[type="submit"]');
+        const usernameError = document.querySelector('.text-danger');
+
+        function checkFormValidity() {
+            const isUsernameValid = !usernameError.textContent;
+            const isPasswordValid = passwordInput.value === passwordConfirmInput.value;
+
+            const passwordError = document.getElementById('passwordError');
+            if (!isPasswordValid) {
+                passwordError.textContent = 'Пароли не совпадают';
+            } else {
+                passwordError.textContent = '';
+            }
+
+            const isFormValid = isUsernameValid && isPasswordValid;
+            submitButton.disabled = !isFormValid;
+        }
+
+        usernameInput.addEventListener('input', function() {
+            const username = usernameInput.value;
+
+            if (username.length > 0) {
+                fetch(`/admin/users/check-username?username=${username}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.exists) {
+                            usernameError.textContent = 'Имя пользователя уже занято';
+                        } else {
+                            usernameError.textContent = '';
+                        }
+                        checkFormValidity();
+                    })
+                    .catch(error => {
+                        console.error('Ошибка:', error);
+                    });
+            } else {
+                usernameError.textContent = '';
+                checkFormValidity();
+            }
+        });
+
+        passwordInput.addEventListener('input', checkFormValidity);
+        passwordConfirmInput.addEventListener('input', checkFormValidity);
+    });
+</script>
+</body>
+</html>

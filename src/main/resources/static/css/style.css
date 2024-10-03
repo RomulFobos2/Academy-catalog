@@ -1,0 +1,141 @@
+.header-container {
+    background-repeat: repeat-x;
+    background-size: auto;
+}
+
+.image-section {
+    background-size: cover;
+    background-position: center;
+    height: 100vh; /* Высота установлена на 100% от высоты окна просмотра */
+}
+
+/*Стили для страницы регистрации*/
+.body-signin {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    padding-top: 40px;
+    padding-bottom: 40px;
+    background-color: #f5f5f5;
+    /*background-image: url('/images/flag.jpg'); !* замените '/images/background.jpg' на путь к вашему изображению *!*/
+    background-size: 100% 100%; /* Растягиваем изображение по ширине */
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.form-signin {
+    width: 100%;
+    max-width: 430px;
+    padding: 15px;
+    margin: auto;
+}
+.form-signin .checkbox {
+    font-weight: 400;
+}
+.form-signin .form-control {
+    position: relative;
+    box-sizing: border-box;
+    height: auto;
+    padding: 10px;
+    font-size: 14px;
+}
+.form-signin .form-control:focus {
+    z-index: 2;
+}
+.form-signin input[type="email"] {
+    margin-bottom: -1px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+}
+.form-signin input[type="text"] {
+    margin-bottom: -1px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+}
+.form-signin input[type="password"] {
+    margin-bottom: -1px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+.form-signin button[type="submit"] {
+    margin-bottom: 10px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+.form-signin a{
+    font-size: 28px;
+}
+
+.form-signin .form-select, .form-signin .form-control {
+    height: 38px;
+}
+
+
+.body-addPage {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding-top: 40px;
+    padding-bottom: 40px;
+    background-color: #f5f5f5;
+}
+
+.form-addPage {
+    width: 100%;
+    max-width: 430px;
+    padding: 15px;
+    margin: auto;
+}
+.form-addPage .checkbox {
+    font-weight: 400;
+}
+.form-addPage .form-control {
+    position: relative;
+    box-sizing: border-box;
+    height: auto;
+    padding: 10px;
+    font-size: 14px;
+}
+.form-addPage .form-control:focus {
+    z-index: 2;
+}
+.form-addPage input[type="email"] {
+    margin-bottom: -1px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+}
+.form-addPage input[type="text"] {
+    margin-bottom: -1px;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+}
+.form-addPage input[type="password"] {
+    margin-bottom: -1px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+.form-addPage button[type="submit"] {
+    margin-bottom: 10px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+.form-addPage a{
+    font-size: 28px;
+}
+
+.form-addPage .form-neighbours{
+    height: 40px;
+}
+
+.custom-input-group {
+    width: 40%; /* Измените значение на желаемую ширину */
+}
+
+.btn.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.small-select {
+    /*font-size: 10px; !* Укажите нужный размер текста *!*/
+}

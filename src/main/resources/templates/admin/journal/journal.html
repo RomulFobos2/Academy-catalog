@@ -1,0 +1,189 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<head>
+    <title>Журнал посещений</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/javascript.js"></script>
+</head>
+<body class="mb-5">
+<header th:insert="blocks/header :: header"></header>
+
+<div class="container mt-5">
+    <div class="alert alert-info mt-2 text-center">
+        <div class="pagination justify-content-start">
+            <div class="d-flex justify-content-start flex-wrap gap-3">
+                <a th:href="'/admin/administrationPanel'" class="btn btn-secondary my-auto">На административную
+                    панель</a>
+                <a th:href="@{/admin/journal/download(searchCategory=${searchCategory}, searchInput=${searchInput}, startDate=${startDate}, endDate=${endDate})}" class="btn btn-success my-auto">Скачать журнал</a>
+            </div>
+        </div>
+    </div>
+    <br>
+
+    <div class="alert alert-info mt-2">
+        <h3 class="text-center">Журнал посещений</h3>
+
+        <!-- Добавляем форму для отправки данных -->
+        <form method="get" action="/admin/journal">
+            <div class="row g-3">
+                <div class="col-sm-3"></div>
+
+                <!-- Поля для поиска -->
+                <div class="col-sm-6">
+                    <!-- Категория поиска и строка поиска -->
+                    <div class="input-group mb-3">
+                        <select id="searchCategory" name="searchCategory" class="form-select" onchange="toggleSearchInput()">
+                            <option value="all" th:selected="${searchCategory == 'all'}">Поиск по всем столбцам</option>
+                            <option value="user" th:selected="${searchCategory == 'user'}">По имени пользователя</option>
+                            <option value="username" th:selected="${searchCategory == 'username'}">По логину</option>
+                            <option value="document" th:selected="${searchCategory == 'document'}">По имени документа</option>
+                            <option value="groupByDocument" th:selected="${searchCategory == 'groupByDocument'}">Сгруппировать по имени документа</option>
+                        </select>
+                        <input type="text" id="searchInput" name="searchInput" class="form-control"
+                               placeholder="Введите данные для поиска" th:value="${searchInput}">
+                    </div>
+
+                    <!-- Поля для выбора диапазона дат -->
+                    <div class="input-group mb-3">
+                        <label for="startDate" class="input-group-text">С даты</label>
+                        <input type="date" id="startDate" name="startDate" class="form-control"
+                               th:value="${startDate}" onchange="updateEndDateMin()">
+                        <label for="endDate" class="input-group-text">По дату</label>
+                        <input type="date" id="endDate" name="endDate" class="form-control"
+                               th:value="${endDate}">
+                    </div>
+
+                    <!-- Кнопка "Найти" -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Найти</button>
+                    </div>
+                </div>
+
+                <div class="col-sm-3"></div>
+            </div>
+        </form>
+
+        <!-- Таблица с данными -->
+        <!-- Таблица для отображения данных -->
+        <div th:if="${isGrouped}">
+            <h3 class="text-center">Группировка по имени документа</h3>
+            <table class="table table-striped text-center">
+                <thead>
+                <tr>
+                    <th>Порядковый номер</th>
+                    <th>Имя документа</th>
+                    <th>Количество открытий</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="doc, stat : ${documentCounts}">
+                    <td th:text="${stat.index + 1}">1</td> <!-- Порядковый номер -->
+                    <td th:text="${doc[0]}">Документ 1</td> <!-- Имя документа -->
+                    <td th:text="${doc[1]}">10</td> <!-- Количество открытий -->
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div th:if="${!isGrouped}">
+            <table class="table table-striped text-center" id="visitorActionsTable">
+                <thead>
+                <tr>
+                    <th>Индекс</th>
+                    <th>Пользователь</th>
+                    <th>Логин</th>
+                    <th>Имя документа</th>
+                    <th>Дата открытия</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${allVisitorActions.size() == 0}">
+                    <td colspan="5">Нет данных для отображения</td>
+                </tr>
+                <tr th:each="action, stat : ${allVisitorActions}" th:unless="${allVisitorActions.size() == 0}">
+                    <td th:text="${currentPage * 10 + stat.index + 1}">1</td> <!-- Индекс с учетом страницы -->
+                    <td th:text="${action.getVisitorFullName()}">Имя 1</td> <!-- Имя пользователя -->
+                    <td th:text="${action.getUsername()}">Логин 1</td> <!-- Логин пользователя -->
+                    <td th:text="${action.getDocumentPath()}">Документ 1</td> <!-- Имя документа -->
+                    <td th:text="${#temporals.format(action.getTimeOfVisit(), 'dd.MM.yyyy HH:mm')}"></td> <!-- Дата открытия -->
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- Навигация для постраничного просмотра -->
+    <div class="d-flex justify-content-center mt-3">
+        <ul class="pagination" th:if="${totalPages > 1}">
+            <!-- Кнопка "Назад" -->
+            <li th:classappend="${currentPage == 0} ? 'disabled' : ''">
+                <a class="page-link" th:href="@{/admin/journal(page=${currentPage - 1}, searchCategory=${searchCategory}, searchInput=${searchInput}, startDate=${startDate}, endDate=${endDate})}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+
+            <!-- Пагинация по номерам страниц -->
+            <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                th:classappend="${i == currentPage} ? 'active' : ''" class="page-item">
+                <a class="page-link" th:href="@{/admin/journal(page=${i}, searchCategory=${searchCategory}, searchInput=${searchInput}, startDate=${startDate}, endDate=${endDate})}" th:text="${i + 1}">1</a>
+            </li>
+
+            <!-- Кнопка "Вперёд" -->
+            <li th:classappend="${currentPage == totalPages - 1} ? 'disabled' : ''">
+                <a class="page-link" th:href="@{/admin/journal(page=${currentPage + 1}, searchCategory=${searchCategory}, searchInput=${searchInput}, startDate=${startDate}, endDate=${endDate})}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+</div>
+
+<div th:insert="blocks/footer :: footer"></div>
+
+<script>
+    function updateEndDateMin() {
+        const startDate = document.getElementById('startDate');
+        const endDate = document.getElementById('endDate');
+
+        // Устанавливаем минимальную дату для поля endDate
+        endDate.min = startDate.value;
+
+        // Проверяем, не является ли текущая дата endDate меньше даты startDate
+        if (new Date(endDate.value) <= new Date(startDate.value)) {
+            const nextDay = new Date(startDate.value);
+            nextDay.setDate(nextDay.getDate() + 1);
+            endDate.value = nextDay.toISOString().split('T')[0]; // Устанавливаем startDate + 1 день
+        }
+    }
+
+    // Устанавливаем минимальное значение для endDate при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function () {
+        updateEndDateMin();
+    });
+
+
+    function toggleSearchInput() {
+        const searchCategory = document.getElementById('searchCategory').value;
+        const searchInput = document.getElementById('searchInput');
+        if (searchCategory === 'groupByDocument') {
+            searchInput.disabled = true;
+        } else {
+            searchInput.disabled = false;
+        }
+    }
+
+    // При загрузке страницы проверяем текущее состояние выбора
+    document.addEventListener('DOMContentLoaded', function () {
+        toggleSearchInput();
+    });
+</script>
+</body>
+</html>

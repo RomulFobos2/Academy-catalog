@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Вход</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/javascript.js"></script>
+</head>
+<body class="text-center mb-5">
+<main class="form-signin">
+    <form action="/login" method="post">
+        <img class="mb-4" src="/images/flag.jpg" style="border: 1px solid black;">
+        <h1 class="h3 mb-3 fw-normal">Пожалуйста, авторизуйтесь</h1>
+        <div class="fs-6 text-danger" th:if="${param.error}">
+            Неправильный логин или пароль.
+        </div>
+
+        <label for="username" class="visually-hidden">Имя пользователя</label>
+        <input type="text" id="username" name="username" placeholder="Введите имя пользователя" class="form-control"
+               autofocus="true"><br>
+        <label for="inputPassword" class="visually-hidden">Пароль</label>
+        <input type="password" id="inputPassword" name="password" placeholder="Введите пароль" class="form-control"><br>
+        <button type="submit" class="w-100 btn btn-lg btn-primary">Войти</button>
+        <a class="p-2 text-dark" href="/">На главную</a>
+    </form>
+</main>
+</body>
+</html>

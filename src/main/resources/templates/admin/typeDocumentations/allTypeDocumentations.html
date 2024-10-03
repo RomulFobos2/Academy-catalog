@@ -1,0 +1,89 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Категории и типы документации</title>
+    <meta charset="UTF-8"/>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/javascript.js"></script>
+</head>
+<body class="mb-5">
+<header th:insert="~{blocks/header :: header}"></header>
+
+<div class="container mt-5">
+    <div class="alert alert-info mt-2 text-center">
+        <div class="pagination justify-content-start">
+            <div class="d-flex justify-content-start flex-wrap gap-3">
+                <a th:href="'/admin/documentations/allDocumentations'" class="btn btn-secondary my-auto">К списку документов</a>
+                <a th:href="'/admin/categoryDocumentations/addCategoryDocumentation'" class="btn btn-success mx-1">Добавить новую категорию</a>
+                <a th:href="'/admin/typeDocumentations/addTypeDocumentation'" class="btn btn-success mx-1">Добавить новый тип</a>
+            </div>
+        </div>
+    </div>
+
+    <div th:each="entry : ${categoryTypeMap.entrySet()}" class="mt-4 mb-5">
+        <!-- Начало карточки -->
+        <div class="card mb-4">
+            <!-- Заголовок карточки -->
+            <div class="card-header d-flex align-items-center">
+                <!-- Заголовок категории -->
+                <h2 class="me-3 mb-0 h5" th:text="${'Категория: ' + entry.key.category}">Название категории</h2>
+                <!-- Кнопки редактирования и удаления категории с иконками -->
+                <a th:href="'/admin/categoryDocumentations/editCategoryDocumentation/' + ${entry.key.getId()}"
+                   class="btn btn-warning btn-sm me-2"
+                   title="Редактировать">
+                    <i class="bi bi-pencil"></i>
+                </a>
+                <a th:href="'/admin/categoryDocumentations/deleteCategoryDocumentation/' + ${entry.key.getId()}"
+                   class="btn btn-danger btn-sm"
+                   title="Удалить"
+                   onclick="return confirm('Вы уверены, что хотите удалить эту категорию?');">
+                    <i class="bi bi-trash"></i>
+                </a>
+            </div>
+            <!-- Тело карточки -->
+            <div class="card-body p-0">
+                <!-- Оборачиваем таблицу в table-responsive для адаптивности -->
+                <div class="table-responsive">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                        <tr>
+                            <th class="col-1">№</th>
+                            <th class="col-5">Тип</th>
+                            <th class="col-6">Действия</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="typeDocumentation, index : ${entry.value}">
+                            <td th:text="${index.index + 1}">1</td>
+                            <td th:text="${typeDocumentation.type}">Название типа</td>
+                            <td>
+                                <div class="d-flex">
+                                    <a th:href="'/admin/typeDocumentations/editTypeDocumentation/' + ${typeDocumentation.getId()}"
+                                       class="btn btn-warning btn-sm me-2"
+                                       title="Редактировать">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a th:href="'/admin/typeDocumentations/deleteTypeDocumentation/' + ${typeDocumentation.getId()}"
+                                       class="btn btn-danger btn-sm"
+                                       title="Удалить"
+                                       onclick="return confirm('Вы уверены, что хотите удалить этот тип документации?');">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- Конец карточки -->
+    </div>
+</div>
+<footer th:insert="~{blocks/footer :: footer}"></footer>
+</body>
+</html>

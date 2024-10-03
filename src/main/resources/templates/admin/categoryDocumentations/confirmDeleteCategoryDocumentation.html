@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Удалить категорию</title>
+    <meta charset="UTF-8"/>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="/css/bootstrap-icons.min.css" rel="stylesheet">
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/javascript.js"></script>
+</head>
+<body class="mb-5">
+<header th:insert="~{blocks/header :: header}"></header>
+
+<div class="container mt-5">
+    <!-- Блок для отображения ошибок -->
+    <div th:if="${error}" class="alert alert-danger" role="alert">
+        <span th:text="${error}"></span>
+    </div>
+    <div class="alert alert-danger">
+        <h3>Вы уверены, что хотите удалить категорию <span th:text="${'&quot;' + categoryDocumentation.category + '&quot;'}">Категория</span>?</h3>
+        <p>Типы документации, которые будут удалены:</p>
+        <ul>
+            <li th:each="type : ${types}" th:text="${type.type}">Тип документации</li>
+        </ul>
+        <p>Документы, которые будут удалены:</p>
+        <ul>
+            <li th:each="doc : ${documents}" th:text="${doc.filePath}">Документ</li>
+        </ul>
+        <p>Для подтверждения введите слово "Удалить":</p>
+        <form th:action="@{/admin/categoryDocumentations/deleteCategoryDocumentation/{id}(id=${categoryDocumentation.id})}" method="post">
+            <input type="text" name="confirmation" class="form-control" required>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-danger">Удалить</button>
+                <a th:href="@{/admin/typeDocumentations/allTypeDocumentations}" class="btn btn-secondary">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<footer th:insert="~{blocks/footer :: footer}"></footer>
+</body>
+</html>

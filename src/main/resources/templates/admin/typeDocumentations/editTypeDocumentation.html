@@ -1,0 +1,129 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Редактировать тип</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/javascript.js"></script>
+
+</head>
+<body class="text-center body-addPage">
+<main class="form-addPage">
+    <div class="container mt-5 mb-5">
+        <form th:action="'/admin/typeDocumentations/editTypeDocumentation/' + ${typeDocumentation.getId()}" method="post">
+<!--            <img class="mb-4" src="https://getbootstrap.com/docs/5.0/assets/brand/bootstrap-logo.svg" alt="" width="72"-->
+<!--                 height="57">-->
+            <h1 class="h3 mb-3 fw-normal">Редактирование типа</h1>
+            <p class="fs-6 text-danger" th:text="${typeDocumentationNameError}"></p>
+            <div class="row g-3">
+                <div class="col-sm-9 mx-auto">
+                    <select class="form-select form-neighbours" name="categoryDocumentationId" id="categoryDocumentationId" required>
+                        <option selected disabled value="">Выберите категорию</option>
+                        <option th:each="categoryDocumentation : ${allCategoryDocumentations}" th:value="${categoryDocumentation.getId()}"
+                                th:text="${categoryDocumentation.getCategory()}"
+                                th:selected="${typeDocumentation.getCategoryDocumentation().getId() == categoryDocumentation.getId()}"></option>
+                    </select>
+                </div>
+                <div class="col-sm-9 mx-auto">
+                    <input type="text" class="form-control" name="inputType" id="inputType"
+                           required placeholder="Название категории" th:value="${typeDocumentation.getType()}">
+                </div>
+            </div><br>
+            <div class="row">
+                <div class="col-sm-9 mx-auto">
+                    <button type="submit" class="btn btn-lg btn-primary w-100" disabled>Сохранить изменения</button>
+                </div>
+            </div>
+            <a class="p-2 text-dark" th:href="'/admin/typeDocumentations/allTypeDocumentations'">К списку типов</a>
+            <p class="mt-5 mb-3 text-muted">&copy;2024</p>
+        </form>
+    </div>
+</main>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputType = document.querySelector('input[name="inputType"]');
+        const categorySelect = document.querySelector('select[name="categoryDocumentationId"]');
+        const originalType = inputType.value.trim(); // Сохраняем оригинальное название типа без пробелов
+        const originalCategory = categorySelect.value; // Сохраняем оригинальную категорию
+        const submitButton = document.querySelector('button[type="submit"]');
+        const typeError = document.querySelector('.text-danger');
+
+        const forbiddenCharacters = /[\\/:*?"<>|]/; // Регулярное выражение для недопустимых символов
+
+        function checkFormValidity() {
+            const typeName = inputType.value.trim();
+            const isTypeValid = !typeError.textContent && typeName.length >= 2 && categorySelect.value;
+            submitButton.disabled = !isTypeValid;
+        }
+
+        function checkTypeDocumentationExists() {
+            const typeName = inputType.value.trim();
+            const selectedCategoryId = categorySelect.value;
+
+            // Если название типа и категория не изменились, не выполняем проверку на сервере
+            if (typeName === originalType && selectedCategoryId === originalCategory) {
+                typeError.textContent = '';
+                checkFormValidity();
+                return;
+            }
+
+            // Проверяем, что длина названия типа не менее 2 символов
+            if (typeName.length < 2) {
+                typeError.textContent = 'Название типа должно быть не менее 2 символов';
+                checkFormValidity();
+                return; // Прерываем дальнейшее выполнение, если длина меньше 2
+            } else {
+                typeError.textContent = ''; // Очищаем ошибку, если длина достаточная
+            }
+
+            // Проверяем на наличие недопустимых символов
+            if (forbiddenCharacters.test(typeName)) {
+                typeError.textContent = 'Название типа содержит недопустимые символы: \\ / : * ? " < > |';
+                inputType.value = typeName.replace(forbiddenCharacters, ''); // Удаляем недопустимые символы
+                checkFormValidity();
+                return;
+            }
+
+            if (typeName.length > 0 && selectedCategoryId) {
+                fetch(`/admin/typeDocumentations/checkTypeDocumentationExists?typeName=${encodeURIComponent(typeName)}&categoryDocumentationId=${selectedCategoryId}`)
+                    .then(response => {
+                        if (response.status === 404) {
+                            throw new Error('Категория не найдена');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data) { // Если тип уже существует в выбранной категории
+                            typeError.textContent = 'Тип с таким названием уже существует в выбранной категории';
+                        } else {
+                            typeError.textContent = '';
+                        }
+                        checkFormValidity();
+                    })
+                    .catch(error => {
+                        console.error('Ошибка:', error);
+                        if (error.message === 'Категория не найдена') {
+                            typeError.textContent = 'Выбранная категория не найдена';
+                        } else {
+                            typeError.textContent = 'Ошибка проверки типа';
+                        }
+                        checkFormValidity();
+                    });
+            } else {
+                typeError.textContent = '';
+                checkFormValidity();
+            }
+        }
+
+        inputType.addEventListener('input', checkTypeDocumentationExists);
+        categorySelect.addEventListener('change', checkTypeDocumentationExists);
+
+        checkFormValidity(); // Инициализируем проверку при загрузке страницы
+    });
+</script>
+</body>
+</html>
+

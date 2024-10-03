@@ -1,0 +1,12 @@
+2024-09-30 20:55:27.351438+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Значение слишком длинное для поля "PASSWORD CHARACTER VARYING(50)": "'$2a$10$Z8S63QHTtYolJS2p21TVi.4PQr4p9rbuJ5dw4KzU/poofFc9yNs5W' (60)"
+Value too long for column "PASSWORD CHARACTER VARYING(50)": "'$2a$10$Z8S63QHTtYolJS2p21TVi.4PQr4p9rbuJ5dw4KzU/poofFc9yNs5W' (60)"; SQL statement:
+insert into t_user (course,date_of_registration,faculty,first_name,last_name,need_change_pass,password,patronymic_name,role_id,username,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2024-09-30 20:57:12.874580+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Значение слишком длинное для поля "PASSWORD CHARACTER VARYING(50)": "'$2a$10$aJPLTtUc5YFvurYxULfQgOQJ8qoQQIKK5kYvyWwx5EvQO0zE.3fmC' (60)"
+Value too long for column "PASSWORD CHARACTER VARYING(50)": "'$2a$10$aJPLTtUc5YFvurYxULfQgOQJ8qoQQIKK5kYvyWwx5EvQO0zE.3fmC' (60)"; SQL statement:
+insert into t_user (course,date_of_registration,faculty,first_name,last_name,need_change_pass,password,patronymic_name,role_id,username,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]
+2024-09-30 20:58:24.108860+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLDataException: Значение слишком длинное для поля "PASSWORD CHARACTER VARYING(50)": "'$2a$10$QnGpHiayWkQL8HxQUazdTORDdcpRjT3KJ1hRHw4/afMDUspLJxrq2' (60)"
+Value too long for column "PASSWORD CHARACTER VARYING(50)": "'$2a$10$QnGpHiayWkQL8HxQUazdTORDdcpRjT3KJ1hRHw4/afMDUspLJxrq2' (60)"; SQL statement:
+insert into t_user (course,date_of_registration,faculty,first_name,last_name,need_change_pass,password,patronymic_name,role_id,username,id) values (?,?,?,?,?,?,?,?,?,?,default) [22001-224]

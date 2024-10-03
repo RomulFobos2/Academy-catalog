@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Главная страница</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/javascript.js"></script>
+    <style>
+        html, body {
+            height: 100vh; /* 100% от высоты окна просмотра */
+            margin: 0; /* Удаление стандартных отступов */
+            padding: 0; /* Удаление внутренних отступов */
+            overflow: hidden; /* Предотвращение любой прокрутки */
+        }
+    </style>
+</head>
+<body class="mb-5">
+<header th:insert="~{blocks/header :: header}"></header>
+<main>
+    <!--    Секция 1-->
+    <section class="text-center fon-container">
+        <div class="row py-lg-5">
+            <div class="col-lg-6 col-md-8 mx-auto">
+                <h3 class="fw-light">Тема</h3>
+                <h3 class="fw-light">СИО ЭСВИКВ ЧП</h3>
+                <h5 class="lead text-body-secondary">Курсанта: Мощенко Марка Петровича</h5>
+            </div>
+        </div>
+    </section>
+
+    <!--    Секция 2-->
+
+    <section class="image-section" style="background-image: url('/images/fon_home.jpg');">
+    </section>
+    <div th:insert="~{blocks/footer :: footer}"></div>
+</main>
+</body>
+</html>

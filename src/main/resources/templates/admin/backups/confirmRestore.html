@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Восстановить из резервной копии</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/css/bootstrap-icons.min.css" rel="stylesheet"/>
+</head>
+<body>
+<div class="container mt-5">
+    <h3>Вы хотите восстановить данные из резервной копии?</h3>
+    <p>Архив: <span th:text="${backup.archiveName}"></span></p>
+    <p>Контрольная сумма: <span th:text="${backup.controlSumma}"></span></p>
+    <form th:action="@{/admin/backups/restoreFromBackup/{id}(id=${backup.id})}" method="post">
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" name="createBackup" id="createBackup">
+            <label for="createBackup" class="form-check-label">Создать резервную копию текущего состояния перед восстановлением</label>
+        </div>
+        <div class="mt-3">
+            <button type="submit" class="btn btn-success">Восстановить</button>
+            <a th:href="@{/admin/backups/allBackups}" class="btn btn-secondary">Отмена</a>
+        </div>
+    </form>
+</div>
+</body>
+</html>

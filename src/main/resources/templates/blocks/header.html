@@ -1,0 +1,20 @@
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<div th:fragment="header" class="header-container justify-content-between" style="background-image: url('/images/fon_header31.jpg');">
+    <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-0 border-bottom shadow-sm">
+        <h5 sec:authorize="isAuthenticated()" class="my-0 mr-md-auto font-weight-normal" onclick="window.location.href = '/profile'"
+            role="button"><a sec:authentication="principal.fullName"/></h5>
+        <h5 sec:authorize="!isAuthenticated()" class="my-0 mr-md-auto font-weight-normal">Гость</h5>
+
+            <nav class="my-2 my-md-0 mr-md-3 ms-auto">
+
+            <a sec:authorize="hasRole('ROLE_ADMIN')"  class="p-2 text-dark" href="/admin/administrationPanel">Администрирование</a>
+
+            <a sec:authorize="hasRole('ROLE_VISITOR')"  class="p-2 text-dark" href="/visitor/documentations/allDocumentations">Документация</a>
+
+        </nav>
+        <a sec:authorize="!isAuthenticated()" class="btn btn-outline-primary" href="/login">Вход</a>
+        <form th:action="@{/logout}" method="post">
+            <input sec:authorize="isAuthenticated()" type="submit" class="btn btn-outline-primary" value="Выход"/>
+        </form>
+    </div>
+</div>

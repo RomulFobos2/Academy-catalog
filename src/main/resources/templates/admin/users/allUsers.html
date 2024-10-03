@@ -1,0 +1,177 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Пользователи</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/javascript.js"></script>
+</head>
+<body class="mb-5">
+<header th:insert="~{blocks/header :: header}"></header>
+
+<div class="container mt-5">
+    <div class="alert alert-info mt-2 text-center">
+        <div class="pagination justify-content-start">
+            <div class="d-flex justify-content-start flex-wrap gap-3">
+                <a th:href="'/admin/administrationPanel'" class="btn btn-secondary my-auto">На административную панель</a>
+                <a th:href="'/admin/users/addUser'" class="btn btn-success my-auto">Добавить пользователя</a>
+            </div>
+        </div>
+    </div>
+
+    <br>
+
+    <div class="p-2 p-md-3 mb-2 pt-2 rounded fon-container text-center"
+         style="background-image: url('/images/fon_home.jpg');">
+        <h3 class="text-dark " th:text="'Пользователи'"></h3>
+
+        <form method="get" action="/admin/users/allUsers">
+            <div class="row g-3">
+                <div class="col-sm-3"></div>
+
+                <!-- Поля для поиска -->
+                <div class="col-sm-6">
+                    <!-- Категория поиска и строка поиска -->
+                    <div class="input-group mb-3">
+                        <select id="searchCategory" name="searchCategory" class="form-select" onchange="toggleSearchInput()">
+                            <option value="all" th:selected="${searchCategory == 'all'}">Поиск по всем столбцам</option>
+                            <option value="lastName" th:selected="${searchCategory == 'lastName'}">По фамилии</option>
+                            <option value="firstName" th:selected="${searchCategory == 'firstName'}">По имени</option>
+                            <option value="patronymicName" th:selected="${searchCategory == 'patronymicName'}">По отчеству</option>
+                            <option value="username" th:selected="${searchCategory == 'username'}">По логину</option>
+                            <option value="course" th:selected="${searchCategory == 'course'}">По курсу</option>
+                            <option value="faculty" th:selected="${searchCategory == 'faculty'}">По факультету</option>
+                            <option value="dateOfRegistration" th:selected="${searchCategory == 'dateOfRegistration'}">По дате регистрации</option>
+                        </select>
+
+                        <select id="searchSort" name="searchSort" class="form-select">
+                            <option value="asc" th:selected="${searchSort == 'asc'}">По возрастанию</option>
+                            <option value="desc" th:selected="${searchSort == 'desc'}">По убыванию</option>
+                        </select>
+                    </div>
+                    <div class="input-group mb-3">
+                        <input type="text" id="searchInput" name="searchInput" class="form-control"
+                               placeholder="Введите данные для поиска" th:value="${searchInput}">
+                    </div>
+
+
+                    <!-- Поля для выбора диапазона дат -->
+                    <div class="input-group mb-3" id="dateFields" style="display: none;">
+                        <label for="startDate" class="input-group-text">С даты</label>
+                        <input type="date" id="startDate" name="startDate" class="form-control"
+                               th:value="${startDate}" onchange="updateEndDateMin()">
+                        <label for="endDate" class="input-group-text">По дату</label>
+                        <input type="date" id="endDate" name="endDate" class="form-control"
+                               th:value="${endDate}">
+                    </div>
+
+                    <!-- Кнопка "Найти" -->
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Найти</button>
+                    </div>
+                </div>
+
+                <div class="col-sm-3"></div>
+            </div>
+        </form>
+
+        <div class="container mt-5">
+            <table class="table" id="userTable">
+                <thead>
+                <tr>
+                    <th>№</th>
+                    <th>ФИО</th>
+                    <th>Логин</th>
+                    <th>Курс</th>
+                    <th>Факультет</th>
+                    <th>Дата регистрации</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="user, index : ${allUsers}">
+                    <td th:text="${index.index+1}"></td>
+                    <td>
+                        <a th:text="${user.getFullName()}"
+                           th:href="'/admin/users/detailsUser/' + ${user.getId()}"></a>
+                    </td>
+                    <td th:text="${user.getUsername()}"></td>
+                    <td th:text="${user.getCourse()}"></td>
+                    <td th:text="${user.getFaculty()}"></td>
+                    <td th:text="${#temporals.format(user.getDateOfRegistration(), 'dd.MM.yyyy')}"></td>
+                </tr>
+                </tbody>
+            </table>
+            <!-- Навигация для постраничного просмотра -->
+            <div class="d-flex justify-content-center mt-3">
+                <ul class="pagination" th:if="${totalPages > 1}">
+                    <!-- Кнопка "Назад" -->
+                    <li th:classappend="${currentPage == 0} ? 'disabled' : ''">
+                        <a class="page-link" th:href="@{/admin/users/allUsers(page=${currentPage - 1}, searchCategory=${searchCategory}, searchInput=${searchInput}, searchSort=${searchSort})}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+
+                    <!-- Пагинация по номерам страниц -->
+                    <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                        th:classappend="${i == currentPage} ? 'active' : ''" class="page-item">
+                        <a class="page-link" th:href="@{/admin/users/allUsers(page=${i}, searchCategory=${searchCategory}, searchInput=${searchInput}, searchSort=${searchSort})}" th:text="${i + 1}">1</a>
+                    </li>
+
+                    <!-- Кнопка "Вперёд" -->
+                    <li th:classappend="${currentPage == totalPages - 1} ? 'disabled' : ''">
+                        <a class="page-link" th:href="@{/admin/users/allUsers(page=${currentPage + 1}, searchCategory=${searchCategory}, searchInput=${searchInput}, searchSort=${searchSort})}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div th:insert="~{blocks/footer :: footer}"></div>
+</body>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const startDate = document.getElementById('startDate');
+        const endDate = document.getElementById('endDate');
+
+        if (startDate && endDate) {
+            updateEndDateMin();
+        }
+    });
+
+    function updateEndDateMin() {
+        const startDate = document.getElementById('startDate');
+        const endDate = document.getElementById('endDate');
+
+        endDate.min = startDate.value;
+
+        if (new Date(endDate.value) <= new Date(startDate.value)) {
+            const nextDay = new Date(startDate.value);
+            nextDay.setDate(nextDay.getDate() + 1);
+            endDate.value = nextDay.toISOString().split('T')[0];
+        }
+    }
+
+    function toggleSearchInput() {
+        const searchCategory = document.getElementById('searchCategory').value;
+        const searchInput = document.getElementById('searchInput');
+        const dateFields = document.getElementById('dateFields'); // Блок с диапазоном дат
+
+        if (searchCategory === 'dateOfRegistration') {
+            searchInput.closest('.input-group').style.display = 'none'; // Скрываем поле ввода
+            dateFields.style.display = 'flex'; // Показываем выбор диапазона дат
+        } else {
+            searchInput.closest('.input-group').style.display = 'flex'; // Показываем поле ввода
+            dateFields.style.display = 'none'; // Скрываем выбор диапазона дат
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        toggleSearchInput();
+    });
+</script>
+</html>
